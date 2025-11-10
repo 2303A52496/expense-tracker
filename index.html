@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker - Version 1</title>
+    <title>Expense Tracker - Version 2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,32 +16,47 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
+        .header {
             text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
         }
 
         .version {
-            text-align: center;
-            color: #667eea;
             font-size: 14px;
-            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
         }
 
         .input-group {
@@ -55,7 +71,8 @@
         }
 
         input[type="text"],
-        input[type="number"] {
+        input[type="number"],
+        select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -64,8 +81,8 @@
             transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus,
-        input[type="number"]:focus {
+        input:focus,
+        select:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -88,7 +105,7 @@
         }
 
         .total-section {
-            margin-top: 30px;
+            margin: 20px 0;
             padding: 20px;
             background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
             border-radius: 12px;
@@ -108,7 +125,8 @@
         }
 
         .expenses-list {
-            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .expense-item {
@@ -121,9 +139,23 @@
             align-items: center;
         }
 
+        .expense-info {
+            flex: 1;
+        }
+
         .expense-name {
             font-weight: 600;
             color: #333;
+            margin-bottom: 5px;
+        }
+
+        .expense-category {
+            font-size: 12px;
+            color: #888;
+            padding: 3px 10px;
+            background: white;
+            border-radius: 12px;
+            display: inline-block;
         }
 
         .expense-amount {
@@ -131,38 +163,127 @@
             font-weight: bold;
             font-size: 18px;
         }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .category-stats {
+            margin-top: 20px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>💰 Expense Tracker</h1>
-        <div class="version">Version 1.0 - Basic</div>
-
-        <div class="input-group">
-            <label for="expenseName">Expense Name</label>
-            <input type="text" id="expenseName" placeholder="e.g., Groceries">
+        <div class="header">
+            <h1>💰 Expense Tracker</h1>
+            <div class="version">Version 2.0 - Advanced (with Categories & Charts)</div>
         </div>
 
-        <div class="input-group">
-            <label for="expenseAmount">Amount (₹)</label>
-            <input type="number" id="expenseAmount" placeholder="e.g., 500" step="0.01">
+        <div class="main-content">
+            <div class="card">
+                <h2>Add Expense</h2>
+                <div class="input-group">
+                    <label for="expenseName">Expense Name</label>
+                    <input type="text" id="expenseName" placeholder="e.g., Groceries">
+                </div>
+
+                <div class="input-group">
+                    <label for="expenseCategory">Category</label>
+                    <select id="expenseCategory">
+                        <option value="Food">🍔 Food</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Entertainment">🎬 Entertainment</option>
+                        <option value="Bills">💡 Bills</option>
+                        <option value="Shopping">🛒 Shopping</option>
+                        <option value="Health">⚕️ Health</option>
+                        <option value="Other">📌 Other</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="expenseAmount">Amount (₹)</label>
+                    <input type="number" id="expenseAmount" placeholder="e.g., 500" step="0.01">
+                </div>
+
+                <button class="btn" onclick="addExpense()">Add Expense</button>
+
+                <div class="total-section">
+                    <div class="total-label">Total Expenses</div>
+                    <div class="total-amount" id="totalAmount">₹0.00</div>
+                </div>
+
+                <div class="expenses-list" id="expensesList"></div>
+            </div>
+
+            <div class="card">
+                <h2>Expense Analysis</h2>
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+                <div class="category-stats" id="categoryStats"></div>
+            </div>
         </div>
-
-        <button class="btn" onclick="addExpense()">Add Expense</button>
-
-        <div class="total-section">
-            <div class="total-label">Total Expenses</div>
-            <div class="total-amount" id="totalAmount">₹0.00</div>
-        </div>
-
-        <div class="expenses-list" id="expensesList"></div>
     </div>
 
     <script>
         let expenses = [];
+        let chart = null;
+
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40',
+                            '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
 
         function addExpense() {
             const name = document.getElementById('expenseName').value.trim();
+            const category = document.getElementById('expenseCategory').value;
             const amount = parseFloat(document.getElementById('expenseAmount').value);
 
             if (!name || isNaN(amount) || amount <= 0) {
@@ -173,6 +294,7 @@
             const expense = {
                 id: Date.now(),
                 name: name,
+                category: category,
                 amount: amount
             };
 
@@ -190,7 +312,10 @@
                 const expenseDiv = document.createElement('div');
                 expenseDiv.className = 'expense-item';
                 expenseDiv.innerHTML = `
-                    <span class="expense-name">${expense.name}</span>
+                    <div class="expense-info">
+                        <div class="expense-name">${expense.name}</div>
+                        <span class="expense-category">${expense.category}</span>
+                    </div>
                     <span class="expense-amount">₹${expense.amount.toFixed(2)}</span>
                 `;
                 expensesList.appendChild(expenseDiv);
@@ -199,6 +324,59 @@
             // Update total
             const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
             document.getElementById('totalAmount').textContent = `₹${total.toFixed(2)}`;
+
+            // Update chart and category stats
+            updateChart();
+            updateCategoryStats();
+        }
+
+        function updateChart() {
+            if (!chart) {
+                initChart();
+            }
+
+            // Calculate category totals
+            const categoryTotals = {};
+            expenses.forEach(expense => {
+                if (!categoryTotals[expense.category]) {
+                    categoryTotals[expense.category] = 0;
+                }
+                categoryTotals[expense.category] += expense.amount;
+            });
+
+            // Update chart data
+            chart.data.labels = Object.keys(categoryTotals);
+            chart.data.datasets[0].data = Object.values(categoryTotals);
+            chart.update();
+        }
+
+        function updateCategoryStats() {
+            const categoryStats = document.getElementById('categoryStats');
+            const categoryTotals = {};
+
+            expenses.forEach(expense => {
+                if (!categoryTotals[expense.category]) {
+                    categoryTotals[expense.category] = 0;
+                }
+                categoryTotals[expense.category] += expense.amount;
+            });
+
+            const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+            categoryStats.innerHTML = '<h3 style="margin-bottom: 15px; color: #555;">Category Breakdown</h3>';
+
+            Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([category, amount]) => {
+                    const percentage = total > 0 ? (amount / total * 100).toFixed(1) : 0;
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'category-item';
+                    categoryDiv.innerHTML = `
+                        <span><strong>${category}</strong> (${percentage}%)</span>
+                        <span>₹${amount.toFixed(2)}</span>
+                    `;
+                    categoryStats.appendChild(categoryDiv);
+                });
         }
 
         function clearInputs() {
@@ -206,6 +384,11 @@
             document.getElementById('expenseAmount').value = '';
             document.getElementById('expenseName').focus();
         }
+
+        // Initialize chart on page load
+        window.onload = function() {
+            initChart();
+        };
     </script>
 </body>
 </html>
