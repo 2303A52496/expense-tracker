@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker - Unit Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-pass {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+
+        .test-fail {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+
+        .test-name {
+            font-weight: 600;
+        }
+
+        .test-badge {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .pass-badge {
+            background: #28a745;
+            color: white;
+        }
+
+        .fail-badge {
+            background: #dc3545;
+            color: white;
+        }
+
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary h2 {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Expense Tracker - Unit Tests</h1>
+        <div id="testResults"></div>
+        <div class="summary" id="summary"></div>
+    </div>
+
+    <script>
+        // Test framework
+        let testResults = [];
+
+        function test(name, testFn) {
+            try {
+                testFn();
+                testResults.push({ name, passed: true });
+            } catch (error) {
+                testResults.push({ name, passed: false, error: error.message });
+            }
+        }
+
+        function assert(condition, message) {
+            if (!condition) {
+                throw new Error(message || 'Assertion failed');
+            }
+        }
+
+        function assertEquals(actual, expected, message) {
+            if (actual !== expected) {
+                throw new Error(message || `Expected ${expected}, but got ${actual}`);
+            }
+        }
+
+        // Expense calculation functions to test
+        function calculateTotal(expenses) {
+            return expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        }
+
+        function validateExpenseName(name) {
+            return typeof name === 'string' && name.trim().length > 0;
+        }
+
+        function validateExpenseAmount(amount) {
+            return typeof amount === 'number' && amount > 0 && !isNaN(amount);
+        }
+
+        function validateExpense(name, amount) {
+            return validateExpenseName(name) && validateExpenseAmount(amount);
+        }
+
+        // Unit Tests
+        
+        // Test 1: Total Calculation - Empty Array
+        test('calculateTotal() should return 0 for empty array', () => {
+            const total = calculateTotal([]);
+            assertEquals(total, 0, 'Total should be 0 for empty array');
+        });
+
+        // Test 2: Total Calculation - Single Expense
+        test('calculateTotal() should return correct total for single expense', () => {
+            const expenses = [{ amount: 100 }];
+            const total = calculateTotal(expenses);
+            assertEquals(total, 100, 'Total should be 100');
+        });
+
+        // Test 3: Total Calculation - Multiple Expenses
+        test('calculateTotal() should return correct total for multiple expenses', () => {
+            const expenses = [
+                { amount: 100 },
+                { amount: 250.50 },
+                { amount: 75.25 }
+            ];
+            const total = calculateTotal(expenses);
+            assertEquals(total, 425.75, 'Total should be 425.75');
+        });
+
+        // Test 4: Total Calculation - Decimal Values
+        test('calculateTotal() should handle decimal values correctly', () => {
+            const expenses = [
+                { amount: 10.99 },
+                { amount: 20.01 }
+            ];
+            const total = calculateTotal(expenses);
+            assertEquals(total, 31.00, 'Total should be 31.00');
+        });
+
+        // Test 5: Expense Name Validation - Valid Name
+        test('validateExpenseName() should accept valid name', () => {
+            const isValid = validateExpenseName('Groceries');
+            assert(isValid === true, 'Should accept valid name');
+        });
+
+        // Test 6: Expense Name Validation - Empty String
+        test('validateExpenseName() should reject empty string', () => {
+            const isValid = validateExpenseName('');
+            assert(isValid === false, 'Should reject empty string');
+        });
+
+        // Test 7: Expense Name Validation - Whitespace Only
+        test('validateExpenseName() should reject whitespace-only string', () => {
+            const isValid = validateExpenseName('   ');
+            assert(isValid === false, 'Should reject whitespace-only string');
+        });
+
+        // Test 8: Expense Name Validation - Non-string
+        test('validateExpenseName() should reject non-string values', () => {
+            const isValid = validateExpenseName(123);
+            assert(isValid === false, 'Should reject non-string values');
+        });
+
+        // Test 9: Expense Amount Validation - Valid Amount
+        test('validateExpenseAmount() should accept valid positive amount', () => {
+            const isValid = validateExpenseAmount(100);
+            assert(isValid === true, 'Should accept valid positive amount');
+        });
+
+        // Test 10: Expense Amount Validation - Zero
+        test('validateExpenseAmount() should reject zero', () => {
+            const isValid = validateExpenseAmount(0);
+            assert(isValid === false, 'Should reject zero');
+        });
+
+        // Test 11: Expense Amount Validation - Negative Number
+        test('validateExpenseAmount() should reject negative numbers', () => {
+            const isValid = validateExpenseAmount(-50);
+            assert(isValid === false, 'Should reject negative numbers');
+        });
+
+        // Test 12: Expense Amount Validation - NaN
+        test('validateExpenseAmount() should reject NaN', () => {
+            const isValid = validateExpenseAmount(NaN);
+            assert(isValid === false, 'Should reject NaN');
+        });
+
+        // Test 13: Expense Amount Validation - String
+        test('validateExpenseAmount() should reject string values', () => {
+            const isValid = validateExpenseAmount('100');
+            assert(isValid === false, 'Should reject string values');
+        });
+
+        // Test 14: Combined Validation - Valid Expense
+        test('validateExpense() should accept valid expense', () => {
+            const isValid = validateExpense('Lunch', 25.50);
+            assert(isValid === true, 'Should accept valid expense');
+        });
+
+        // Test 15: Combined Validation - Invalid Name
+        test('validateExpense() should reject invalid name', () => {
+            const isValid = validateExpense('', 25.50);
+            assert(isValid === false, 'Should reject invalid name');
+        });
+
+        // Test 16: Combined Validation - Invalid Amount
+        test('validateExpense() should reject invalid amount', () => {
+            const isValid = validateExpense('Lunch', -25.50);
+            assert(isValid === false, 'Should reject invalid amount');
+        });
+
+        // Display results
+        function displayResults() {
+            const resultsContainer = document.getElementById('testResults');
+            const summaryContainer = document.getElementById('summary');
+            
+            const passedTests = testResults.filter(r => r.passed).length;
+            const failedTests = testResults.filter(r => !r.passed).length;
+            
+            testResults.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${result.passed ? 'test-pass' : 'test-fail'}`;
+                resultDiv.innerHTML = `
+                    <span class="test-name">${result.name}</span>
+                    <span class="test-badge ${result.passed ? 'pass-badge' : 'fail-badge'}">
+                        ${result.passed ? '✓ PASS' : '✗ FAIL'}
+                    </span>
+                `;
+                resultsContainer.appendChild(resultDiv);
+            });
+            
+            summaryContainer.innerHTML = `
+                <h2>Test Summary</h2>
+                <p><strong>${passedTests}</strong> tests passed, <strong>${failedTests}</strong> tests failed</p>
+                <p>Total: <strong>${testResults.length}</strong> tests</p>
+                <p>Success Rate: <strong>${((passedTests / testResults.length) * 100).toFixed(1)}%</strong></p>
+            `;
+        }
+
+        // Run all tests and display results
+        displayResults();
+    </script>
+</body>
+</html>
